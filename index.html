@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>محاكاة مسابقة الأمن السيبراني</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 20px;
+    font-family: Arial, Tahoma, sans-serif;
+    background: linear-gradient(135deg, #e8f0f8, #f7f9fc);
+    color: #17202a;
+}
+
+.container {
+    max-width: 900px;
+    margin: 25px auto;
+    background: white;
+    border-radius: 22px;
+    padding: 30px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+}
+
+h1 {
+    text-align: center;
+    margin: 0 0 8px;
+    font-size: 30px;
+}
+
+.produced {
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 25px;
+    line-height: 1.7;
+}
+
+.progress {
+    text-align: center;
+    color: #667085;
+    font-size: 17px;
+    margin-bottom: 10px;
+}
+
+.timer {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    margin: 10px auto 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: bold;
+    border: 5px solid #1565c0;
+    color: #1565c0;
+}
+
+.question {
+    font-size: 23px;
+    font-weight: bold;
+    line-height: 1.8;
+    margin: 20px 0;
+}
+
+.option {
+    width: 100%;
+    padding: 17px;
+    margin: 11px 0;
+    border: 2px solid #d9e1ea;
+    border-radius: 13px;
+    background: white;
+    font-size: 18px;
+    text-align: right;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.option:hover {
+    background: #edf5ff;
+    border-color: #1565c0;
+}
+
+.option:disabled {
+    cursor: not-allowed;
+    opacity: 0.9;
+}
+
+.status {
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    margin: 15px 0;
+    min-height: 28px;
+}
+
+.action {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 13px;
+    background: #1565c0;
+    color: white;
+    font-size: 19px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.action:hover {
+    background: #0d47a1;
+}
+
+.panel {
+    text-align: center;
+    padding: 25px;
+    background: #f5f7fa;
+    border-radius: 16px;
+    line-height: 2;
+}
+
+.panel h2 {
+    margin-top: 0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+}
+
+th {
+    background: #e8eef5;
+}
+
+.big-score {
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.hidden {
+    display: none;
+}
+
+@media(max-width:600px) {
+    .container {
+        padding: 18px;
+    }
+
+    .question {
+        font-size: 20px;
+    }
+
+    .option {
+        font-size: 16px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>🛡️ محاكاة مسابقة تعزيز الوعي بالأمن السيبراني</h1>
+
+    <div class="produced">
+        إنتاج: عبدالكريم الهياف<br>
+        Produced by: Abdulkarim Alhayaf
+    </div>
+
+    <!-- اللعبة -->
+    <div id="game">
+
+        <div class="progress" id="progress"></div>
+
+        <div class="timer" id="timer">25</div>
+
+        <div class="question" id="question"></div>
+
+        <div id="options"></div>
+
+        <div class="status" id="status"></div>
+
+        <button class="action hidden" id="nextButton">
+            السؤال التالي
+        </button>
+
+    </div>
+
+
+    <!-- صفحة التوقف -->
+    <div id="pauseScreen" class="panel hidden"></div>
+
+
+    <!-- النتيجة النهائية -->
+    <div id="resultScreen" class="panel hidden"></div>
+
+    <button class="action hidden" id="restartButton">
+        🔄 إعادة المحاولة
+    </button>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   بنك الأسئلة - 60 سؤال
+   ========================================================= */
+
+const questionBank = [
+
+{
+q: "ما الهدف الأساسي من المصادقة متعددة العوامل MFA؟",
+options: [
+"زيادة سرعة تسجيل الدخول",
+"إضافة وسيلة تحقق أخرى إلى جانب كلمة المرور",
+"حذف كلمات المرور",
+"منع جميع البرمجيات الخبيثة"
+],
+answer: 1
+},
+
+{
+q: "أي من التالي يمثل أفضل ممارسة لكلمات المرور؟",
+options: [
+"استخدام كلمة واحدة لكل الحسابات",
+"استخدام اسم المستخدم",
+"استخدام كلمة مرور طويلة وفريدة لكل حساب",
+"استخدام تاريخ الميلاد"
+],
+answer: 2
+},
+
+{
+q: "ما المقصود بالتصيد الاحتيالي Phishing؟",
+options: [
+"نسخ الملفات احتياطيًا",
+"خداع المستخدم للحصول على معلومات حساسة",
+"تحديث نظام التشغيل",
+"تشفير القرص"
+],
+answer: 1
+},
+
+{
+q: "وصلتك رسالة تطلب منك رمز التحقق بحجة أنها من الدعم الفني. ماذا تفعل؟",
+options: [
+"إعطاء الرمز بسرعة",
+"نشر الرمز",
+"إرسال الرمز للدعم",
+"عدم مشاركة الرمز والتحقق من الجهة عبر قناة رسمية"
+],
+answer: 3
+},
+
+{
+q: "ما الوظيفة الأساسية لجدار الحماية Firewall؟",
+options: [
+"مراقبة والتحكم في حركة الشبكة وفق قواعد أمنية",
+"تخزين كلمات المرور",
+"زيادة سرعة الإنترنت",
+"إنشاء حسابات المستخدمين"
+],
+answer: 0
+},
+
+{
+q: "أي سجل DNS يستخدم عادة لتحديد خوادم البريد الإلكتروني؟",
+options: [
+"AAAA",
+"MX",
+"A",
+"NS"
+],
+answer: 1
+},
+
+{
+q: "أي سجل DNS يربط اسم النطاق بعنوان IPv4؟",
+options: [
+"MX",
+"AAAA",
+"A",
+"TXT"
+],
+answer: 2
+},
+
+{
+q: "ما وظيفة سجل AAAA في DNS؟",
+options: [
+"تحديد خادم البريد",
+"ربط النطاق بعنوان IPv6",
+"تحديد كلمة المرور",
+"تشفير الاتصال"
+],
+answer: 1
+},
+
+{
+q: "ما معنى HTTP 403؟",
+options: [
+"المورد غير موجود",
+"تمت إعادة التوجيه",
+"الوصول ممنوع",
+"نجاح الطلب"
+],
+answer: 2
+},
+
+{
+q: "ما معنى HTTP 404؟",
+options: [
+"الخادم مشغول",
+"المورد غير موجود",
+"الوصول ممنوع",
+"الطلب ناجح"
+],
+answer: 1
+},
+
+{
+q: "ما المنفذ الشائع لبروتوكول SSH؟",
+options: [
+"22",
+"21",
+"25",
+"80"
+],
+answer: 0
+},
+
+{
+q: "ما المنفذ الشائع لـ HTTPS؟",
+options: [
+"53",
+"443",
+"110",
+"23"
+],
+answer: 1
+},
+
+{
+q: "ما الفرق الأساسي بين HTTP وHTTPS؟",
+options: [
+"HTTPS يضيف حماية تشفير للاتصال باستخدام TLS",
+"HTTP أسرع دائمًا",
+"HTTPS لا يستخدم الإنترنت",
+"لا يوجد أي فرق"
+],
+answer: 0
+},
+
+{
+q: "ما المقصود بالهندسة الاجتماعية Social Engineering؟",
+options: [
+"تشفير الملفات",
+"استغلال العامل البشري بالتلاعب والخداع",
+"فحص المنافذ",
+"إنشاء شبكة"
+],
+answer: 1
+},
+
+{
+q: "ما المثال الأفضل على Smishing؟",
+options: [
+"رسالة SMS احتيالية تحتوي رابطًا مشبوهًا",
+"تحديث نظام رسمي",
+"نسخة احتياطية",
+"تشفير ملف"
+],
+answer: 0
+},
+
+{
+q: "ما المثال الأفضل على Vishing؟",
+options: [
+"ملف PDF",
+"رسالة بريدية",
+"مكالمة هاتفية تنتحل صفة جهة موثوقة",
+"تحديث برنامج"
+],
+answer: 2
+},
+
+{
+q: "ما المقصود بـ Ransomware؟",
+options: [
+"برنامج نسخ احتياطي",
+"برمجية خبيثة قد تشفر البيانات وتطلب فدية",
+"جدار حماية",
+"محرك بحث"
+],
+answer: 1
+},
+
+{
+q: "ما أفضل وسيلة لتقليل أثر هجوم Ransomware على البيانات؟",
+options: [
+"تعطيل النسخ الاحتياطي",
+"فتح المرفقات المجهولة",
+"استخدام نسخ احتياطية منفصلة ومختبرة",
+"استخدام كلمة مرور قصيرة"
+],
+answer: 2
+},
+
+{
+q: "ما المقصود بـ Hashing؟",
+options: [
+"تحويل البيانات إلى قيمة ناتجة تستخدم للتحقق أو التخزين الآمن لكلمات المرور",
+"إرسال بريد",
+"فتح المنافذ",
+"حذف الملفات"
+],
+answer: 0
+},
+
+{
+q: "لماذا لا يُفضل تخزين كلمات المرور كنص واضح؟",
+options: [
+"لأنها تستهلك الإنترنت",
+"لأن من يصل إلى قاعدة البيانات يستطيع قراءتها مباشرة",
+"لأنها تمنع النسخ الاحتياطي",
+"لأنها لا تعمل على الهواتف"
+],
+answer: 1
+},
+
+{
+q: "ما المقصود بمبدأ Least Privilege؟",
+options: [
+"إعطاء الجميع صلاحيات المدير",
+"منع جميع المستخدمين",
+"منح المستخدم أقل صلاحيات يحتاجها لأداء مهمته",
+"تغيير كلمة المرور يوميًا"
+],
+answer: 2
+},
+
+{
+q: "ما المقصود بـ IDOR؟",
+options: [
+"وصول مستخدم إلى مورد لا يملك صلاحية الوصول إليه بسبب ضعف التحقق من الصلاحيات",
+"نوع من التشفير",
+"نسخة احتياطية",
+"بروتوكول بريد"
+],
+answer: 0
+},
+
+{
+q: "ما أفضل دفاع ضد IDOR؟",
+options: [
+"إخفاء رقم المورد فقط",
+"التحقق من صلاحية المستخدم لكل مورد على الخادم",
+"تغيير لون الموقع",
+"استخدام HTTP فقط"
+],
+answer: 1
+},
+
+{
+q: "لماذا قد تفشل أدوات الفحص التلقائي في اكتشاف IDOR؟",
+options: [
+"لأنها لا تعمل على الويب",
+"لأن IDOR ليس ثغرة",
+"لأنها قد لا تفهم منطق الصلاحيات والعلاقات بين المستخدمين والموارد",
+"لأنها تحتاج إلى DNS"
+],
+answer: 2
+},
+
+{
+q: "ما المقصود بـ XSS؟",
+options: [
+"إدخال نص برمجي ضار في سياق صفحة ويب",
+"تشفير قاعدة البيانات",
+"فحص المنافذ",
+"ضغط الملفات"
+],
+answer: 0
+},
+
+{
+q: "أي إجراء يساعد على تقليل خطر XSS؟",
+options: [
+"فتح كل المنافذ",
+"ترميز المخرجات والتحقق من المدخلات بطريقة صحيحة",
+"تعطيل النسخ الاحتياطي",
+"مشاركة الجلسات"
+],
+answer: 1
+},
+
+{
+q: "ما الفرق بين Stored XSS وReflected XSS؟",
+options: [
+"Stored يُخزن المحتوى الخبيث على الخادم عادة، بينما Reflected يُعاد في استجابة الطلب",
+"لا يوجد فرق",
+"Reflected لا يحدث في الويب",
+"Stored خاص بالشبكات فقط"
+],
+answer: 0
+},
+
+{
+q: "ما المقصود بـ Blind XSS؟",
+options: [
+"XSS لا يمكن أن يؤثر على أي مستخدم",
+"XSS قد يُنفذ لاحقًا عندما يعرض مستخدم آخر البيانات المتأثرة",
+"تشفير HTML",
+"نوع من النسخ الاحتياطي"
+],
+answer: 1
+},
+
+{
+q: "ما وظيفة WAF؟",
+options: [
+"إدارة كلمات المرور",
+"توفير حماية ومراقبة لتطبيقات الويب",
+"تخزين الصور",
+"تحديد موقع المستخدم"
+],
+answer: 1
+},
+
+{
+q: "ما المقصود بالاستطلاع Reconnaissance؟",
+options: [
+"جمع معلومات عن الهدف قبل التقييم الأمني",
+"حذف البيانات",
+"تشفير الملفات",
+"تثبيت برنامج"
+],
+answer: 0
+},
+
+{
+q: "ما الفرق بين الاستطلاع السلبي والنشط؟",
+options: [
+"السلبي لا يستخدم الإنترنت",
+"النشط لا يتفاعل مع الهدف",
+"السلبي يعتمد غالبًا على مصادر متاحة دون تفاعل مباشر، والنشط يتضمن تفاعلًا مع الهدف",
+"لا يوجد فرق"
+],
+answer: 2
+},
+
+{
+q: "ما الأمر في Linux الذي يعرض مسار العمل الحالي؟",
+options: [
+"ls",
+"pwd",
+"cd",
+"cat"
+],
+answer: 1
+},
+
+{
+q: "ما الأمر الذي يعرض الملفات والمجلدات في المسار الحالي؟",
+options: [
+"ls",
+"pwd",
+"mkdir",
+"whoami"
+],
+answer: 0
+},
+
+{
+q: "ما الأداة المعروفة لفحص المنافذ والخدمات؟",
+options: [
+"Paint",
+"Nmap",
+"Notepad",
+"Calculator"
+],
+answer: 1
+},
+
+{
+q: "ما خيار Nmap الشائع لمحاولة اكتشاف نظام التشغيل؟",
+options: [
+"-sV",
+"-p",
+"-O",
+"-n"
+],
+answer: 2
+},
+
+{
+q: "ما خيار Nmap الشائع لاكتشاف إصدارات الخدمات؟",
+options: [
+"-sV",
+"-O",
+"-p",
+"-L"
+],
+answer: 0
+},
+
+{
+q: "ما المقصود بـ Port Scanning؟",
+options: [
+"تشفير الملفات",
+"فحص المنافذ لمعرفة المتاح منها",
+"نسخ الملفات",
+"تغيير كلمة المرور"
+],
+answer: 1
+},
+
+{
+q: "ما المقصود بالثغرة الأمنية Vulnerability؟",
+options: [
+"نقطة ضعف قد تؤثر في أمن النظام",
+"نسخة احتياطية",
+"عنوان IP",
+"اسم مستخدم"
+],
+answer: 0
+},
+
+{
+q: "ما المقصود بـ Exploit؟",
+options: [
+"نسخة احتياطية",
+"طريقة تستفيد من نقطة ضعف لتحقيق تأثير معين",
+"برنامج حماية",
+"سجل DNS"
+],
+answer: 1
+},
+
+{
+q: "ما الهدف الأساسي من اختبار الاختراق الأخلاقي؟",
+options: [
+"اختراق أي نظام دون إذن",
+"حذف بيانات المستخدمين",
+"اكتشاف نقاط الضعف المصرح باختبارها وتحسين الحماية",
+"تعطيل الخدمات"
+],
+answer: 2
+},
+
+{
+q: "ما الذي يجب الحصول عليه قبل اختبار نظام مملوك لجهة أخرى؟",
+options: [
+"تصريح ونطاق واضح للاختبار",
+"كلمة مرور الموظف",
+"حساب شخص آخر",
+"عنوان بريد عشوائي"
+],
+answer: 0
+},
+
+{
+q: "ما المقصود بـ Scope في اختبار الاختراق؟",
+options: [
+"سرعة الشبكة",
+"الأنظمة والنطاقات المسموح باختبارها والحدود المحددة",
+"نوع المتصفح",
+"كلمة المرور"
+],
+answer: 1
+},
+
+{
+q: "ما المقصود بـ Confidentiality في مثلث CIA؟",
+options: [
+"إتاحة الخدمة",
+"الحفاظ على صحة البيانات",
+"منع الوصول غير المصرح للمعلومات",
+"زيادة سرعة النظام"
+],
+answer: 2
+},
+
+{
+q: "ما المقصود بـ Integrity؟",
+options: [
+"الحفاظ على صحة البيانات وعدم تعديلها بشكل غير مصرح",
+"إتاحة الخدمة",
+"إخفاء عنوان IP",
+"زيادة سرعة الإنترنت"
+],
+answer: 0
+},
+
+{
+q: "ما المقصود بـ Availability؟",
+options: [
+"تشفير البيانات",
+"إتاحة الأنظمة والبيانات للمستخدمين المصرح لهم عند الحاجة",
+"منع الوصول",
+"تغيير كلمات المرور"
+],
+answer: 1
+},
+
+{
+q: "جهاز مدرسي يستخدم لتسجيل حضور الطلاب. أي عنصر من CIA قد تكون له الأولوية حسب الغرض والسياق؟",
+options: [
+"Confidentiality دائمًا",
+"Integrity دائمًا",
+"Availability دائمًا",
+"يعتمد على الغرض والسياق"
+],
+answer: 3
+},
+
+{
+q: "أي عنوان IPv4 من التالي خاص Private IP؟",
+options: [
+"8.8.8.8",
+"1.1.1.1",
+"192.168.1.10",
+"9.9.9.9"
+],
+answer: 2
+},
+
+{
+q: "أي نطاق يمثل عناوين IPv4 الخاصة؟",
+options: [
+"10.0.0.0/8",
+"11.0.0.0/8",
+"100.0.0.0/8",
+"200.0.0.0/8"
+],
+answer: 0
+},
+
+{
+q: "ما الوظيفة الأساسية لـ DNS؟",
+options: [
+"فحص الفيروسات",
+"ترجمة أسماء النطاقات إلى عناوين IP",
+"تشفير الملفات",
+"إنشاء كلمات المرور"
+],
+answer: 1
+},
+
+{
+q: "ما الفرق الأساسي بين TCP وUDP؟",
+options: [
+"لا يوجد فرق",
+"UDP أكثر أمانًا دائمًا",
+"TCP يوفر اتصالًا موثوقًا قائمًا على الاتصال، بينما UDP أبسط ولا يضمن التسليم",
+"TCP يستخدم للصور فقط"
+],
+answer: 2
+},
+
+{
+q: "ما المقصود بـ DDoS؟",
+options: [
+"إغراق خدمة بطلبات من مصادر متعددة للتأثير على توفرها",
+"سرقة كلمة مرور فقط",
+"تشفير قاعدة البيانات",
+"نسخ الملفات"
+],
+answer: 0
+},
+
+{
+q: "ما الإجراء الذي يساعد على تقليل أثر DDoS؟",
+options: [
+"فتح جميع المنافذ",
+"استخدام خدمات الحماية والتوزيع ومراقبة حركة الشبكة",
+"تعطيل التحديثات",
+"مشاركة كلمات المرور"
+],
+answer: 1
+},
+
+{
+q: "ما فائدة النسخ الاحتياطي؟",
+options: [
+"زيادة سرعة الإنترنت",
+"إخفاء عنوان IP",
+"استعادة البيانات عند فقدانها أو تلفها",
+"منع كل أنواع الهجمات"
+],
+answer: 2
+},
+
+{
+q: "ما الهدف من قاعدة 3-2-1 للنسخ الاحتياطي؟",
+options: [
+"تنويع النسخ ومواقع التخزين لتقليل خطر فقدانها جميعًا",
+"استخدام ثلاث كلمات مرور",
+"فتح ثلاثة منافذ",
+"تشفير البيانات ثلاث مرات"
+],
+answer: 0
+},
+
+{
+q: "ما الخطر من إعادة استخدام كلمة المرور نفسها في عدة مواقع؟",
+options: [
+"تزيد سرعة الحساب",
+"اختراق حساب واحد قد يعرّض الحسابات الأخرى للخطر",
+"تمنع MFA",
+"تقلل مساحة التخزين"
+],
+answer: 1
+},
+
+{
+q: "ما أفضل تصرف عند وصول رمز تحقق لم تطلبه؟",
+options: [
+"إعطاؤه للمتصل",
+"نشره",
+"تجاهله والتحقق من أمان الحساب إذا لزم",
+"إرساله لشخص آخر"
+],
+answer: 2
+},
+
+{
+q: "ما الخطر من استخدام شبكة Wi-Fi عامة لتنفيذ عملية حساسة؟",
+options: [
+"قد تزيد سرعة الجهاز",
+"قد تزيد مخاطر اعتراض البيانات أو الاتصال بشبكة غير موثوقة",
+"تمنع تحديث النظام",
+"تحذف الملفات"
+],
+answer: 1
+},
+
+{
+q: "ما فائدة استخدام VPN في بعض الحالات؟",
+options: [
+"يمنع جميع الهجمات بنسبة 100%",
+"يمكنه حماية الاتصال عبر شبكة غير موثوقة حسب الإعداد والخدمة المستخدمة",
+"يلغي الحاجة لكلمة المرور",
+"يمنع الفيروسات دائمًا"
+],
+answer: 1
+},
+
+{
+q: "ما المقصود بـ Zero-Day Vulnerability؟",
+options: [
+"نسخة احتياطية يومية",
+"ثغرة لم يتوفر لها تصحيح أمني مناسب بعد أو استُغلت قبل توفر التصحيح",
+"تحديث أسبوعي",
+"حساب بدون كلمة مرور"
+],
+answer: 1
+},
+
+{
+q: "ما الفرق الأساسي بين التشفير المتماثل وغير المتماثل؟",
+options: [
+"المتماثل يستخدم مفتاحًا مشتركًا، وغير المتماثل يستخدم زوجًا من المفاتيح",
+"كلاهما لا يستخدم مفاتيح",
+"المتماثل خاص بالبريد فقط",
+"لا يوجد فرق"
+],
+answer: 0
+},
+
+{
+q: "ما المقصود بـ Public Key؟",
+options: [
+"عنوان IP خاص",
+"كلمة مرور المدير",
+"مفتاح يمكن مشاركته ويستخدم ضمن أنظمة التشفير غير المتماثل",
+"رمز تحقق SMS"
+],
+answer: 2
+},
+
+{
+q: "ما وظيفة Cookie في تطبيقات الويب؟",
+options: [
+"تخزين معلومات صغيرة في المتصفح للمساعدة في الجلسات والتفضيلات وغيرها",
+"فحص المنافذ",
+"تشفير القرص",
+"تشغيل مضاد الفيروسات"
+],
+answer: 0
+},
+
+{
+q: "ما الخطر المحتمل من سرقة Session Cookie حساسة؟",
+options: [
+"قد تسمح بانتحال جلسة المستخدم إذا لم توجد وسائل حماية كافية",
+"تزيد سرعة الموقع",
+"تحذف DNS",
+"تمنع MFA دائمًا"
+],
+answer: 0
+},
+
+{
+q: "ما فائدة HttpOnly في Cookie؟",
+options: [
+"تمنع إرسال Cookie عبر الإنترنت",
+"تقلل وصول JavaScript إلى Cookie",
+"تغير كلمة المرور",
+"تفتح منفذ HTTPS"
+],
+answer: 1
+},
+
+{
+q: "ما فائدة Secure في Cookie؟",
+options: [
+"تجعل Cookie تُرسل عبر HTTPS فقط في الظروف المناسبة",
+"تمنع المستخدم من تسجيل الدخول",
+"تحذف Cookie دائمًا",
+"تمنع DNS"
+],
+answer: 0
+},
+
+{
+q: "أي مبدأ أمني يعني عدم منح المستخدم صلاحيات أكثر مما يحتاج؟",
+options: [
+"Availability",
+"Least Privilege",
+"Redundancy",
+"Compression"
+],
+answer: 1
+},
+
+{
+q: "ما أفضل تصرف عند الاشتباه باختراق حسابك؟",
+options: [
+"مشاركة كلمة المرور",
+"تجاهل التنبيهات",
+"تغيير بيانات الدخول من جهاز موثوق وتفعيل MFA ومراجعة الجلسات",
+"حذف التطبيق فقط"
+],
+answer: 2
+},
+
+{
+q: "لماذا يجب تثبيت البرامج من مصادر موثوقة؟",
+options: [
+"لتقليل خطر تثبيت نسخة مزيفة أو خبيثة",
+"لزيادة حجم التطبيق",
+"لتعطيل التشفير",
+"لإلغاء النسخ الاحتياطي"
+],
+answer: 0
+}
+
+];
+
+
+/* =========================================================
+   خلط أماكن الإجابات
+   ========================================================= */
+
+function shuffleAnswers(question) {
+
+    let answers = question.options.map((text, index) => ({
+        text: text,
+        correct: index === question.answer
+    }));
+
+    for (let i = answers.length - 1; i > 0; i--) {
+
+        let j = Math.floor(Math.random() * (i + 1));
+
+        [answers[i], answers[j]] =
+        [answers[j], answers[i]];
+    }
+
+    return answers;
+}
+
+
+/* =========================================================
+   المتغيرات
+   ========================================================= */
+
+let currentQuestion = 0;
+
+let score = 0;
+
+let seconds = 25;
+
+let timerInterval;
+
+let startTime;
+
+let currentAnswers = [];
+
+let groupCorrect = 0;
+
+let groupTimes = [];
+
+let speedStats = {
+
+    under3: 0,
+    under5: 0,
+    under7: 0,
+    under10: 0,
+    under15: 0,
+    under25: 0,
+    timeout: 0
+
+};
+
+
+/* =========================================================
+   العناصر
+   ========================================================= */
+
+const progress = document.getElementById("progress");
+
+const timer = document.getElementById("timer");
+
+const question = document.getElementById("question");
+
+const options = document.getElementById("options");
+
+const status = document.getElementById("status");
+
+const nextButton = document.getElementById("nextButton");
+
+const game = document.getElementById("game");
+
+const pauseScreen = document.getElementById("pauseScreen");
+
+const resultScreen = document.getElementById("resultScreen");
+
+const restartButton = document.getElementById("restartButton");
+
+
+/* =========================================================
+   تحميل السؤال
+   ========================================================= */
+
+function loadQuestion() {
+
+    clearInterval(timerInterval);
+
+    seconds = 25;
+
+    timer.textContent = "25";
+
+    status.textContent = "";
+
+    nextButton.classList.add("hidden");
+
+    progress.textContent =
+        `السؤال ${currentQuestion + 1} من ${questionBank.length}`;
+
+    question.textContent =
+        questionBank[currentQuestion].q;
+
+    options.innerHTML = "";
+
+    currentAnswers =
+        shuffleAnswers(questionBank[currentQuestion]);
+
+
+    currentAnswers.forEach((item, index) => {
+
+        const button =
+            document.createElement("button");
+
+        button.className = "option";
+
+        button.textContent =
+            `${String.fromCharCode(65 + index)}. ${item.text}`;
+
+        button.onclick = () =>
+            selectAnswer(index);
+
+        options.appendChild(button);
+
+    });
+
+
+    startTime = performance.now();
+
+
+    timerInterval = setInterval(() => {
+
+        seconds--;
+
+        timer.textContent = seconds;
+
+
+        if (seconds <= 0) {
+
+            clearInterval(timerInterval);
+
+            speedStats.timeout++;
+
+            lockQuestion(
+                "⏰ انتهى الوقت! تم قفل السؤال."
+            );
+
+        }
+
+    }, 1000);
+
+}
+
+
+/* =========================================================
+   تسجيل سرعة الإجابة
+   ========================================================= */
+
+function recordSpeed(time) {
+
+    if (time < 3) {
+
+        speedStats.under3++;
+
+    } else if (time < 5) {
+
+        speedStats.under5++;
+
+    } else if (time < 7) {
+
+        speedStats.under7++;
+
+    } else if (time < 10) {
+
+        speedStats.under10++;
+
+    } else if (time < 15) {
+
+        speedStats.under15++;
+
+    } else {
+
+        speedStats.under25++;
+
+    }
+
+}
+
+
+/* =========================================================
+   اختيار الإجابة
+   ========================================================= */
+
+function selectAnswer(index) {
+
+    clearInterval(timerInterval);
+
+    let elapsed =
+        (performance.now() - startTime) / 1000;
+
+    elapsed =
+        Math.round(elapsed * 10) / 10;
+
+
+    recordSpeed(elapsed);
+
+    groupTimes.push(elapsed);
+
+
+    [...options.children].forEach(button => {
+
+        button.disabled = true;
+
+    });
+
+
+    if (currentAnswers[index].correct) {
+
+        score++;
+
+        groupCorrect++;
+
+        status.textContent =
+            `✅ إجابة صحيحة — زمنك ${elapsed.toFixed(1)} ثانية`;
+
+    } else {
+
+        status.textContent =
+            `❌ إجابة غير صحيحة — زمنك ${elapsed.toFixed(1)} ثانية`;
+
+    }
+
+
+    nextButton.classList.remove("hidden");
+
+}
+
+
+/* =========================================================
+   قفل السؤال
+   ========================================================= */
+
+function lockQuestion(message) {
+
+    [...options.children].forEach(button => {
+
+        button.disabled = true;
+
+    });
+
+    status.textContent = message;
+
+    nextButton.classList.remove("hidden");
+
+}
+
+
+/* =========================================================
+   السؤال التالي
+   ========================================================= */
+
+nextButton.onclick = function() {
+
+    currentQuestion++;
+
+    nextButton.classList.add("hidden");
+
+
+    if (currentQuestion >= questionBank.length) {
+
+        finishQuiz();
+
+        return;
+
+    }
+
+
+    /*
+       بعد كل 10 أسئلة
+       تظهر صفحة النتائج
+    */
+
+    if (currentQuestion % 10 === 0) {
+
+        showGroupResults();
+
+    } else {
+
+        loadQuestion();
+
+    }
+
+};
+
+
+/* =========================================================
+   صفحة نتيجة كل 10 أسئلة
+   ========================================================= */
+
+function showGroupResults() {
+
+    game.classList.add("hidden");
+
+    pauseScreen.classList.remove("hidden");
+
+
+    let average = 0;
+
+    if (groupTimes.length > 0) {
+
+        average =
+            groupTimes.reduce((a,b) => a + b, 0)
+            / groupTimes.length;
+
+        average =
+            average.toFixed(1);
+
+    }
+
+
+    pauseScreen.innerHTML = `
+
+        <h2>🏁 انتهت المجموعة</h2>
+
+        <p>
+            <strong>
+            الأسئلة ${currentQuestion - 9}
+            إلى ${currentQuestion}
+            </strong>
+        </p>
+
+        <p class="big-score">
+            ${groupCorrect} / 10
+        </p>
+
+        <p>
+            متوسط زمن الإجابة:
+            <strong>${average} ثانية</strong>
+        </p>
+
+        <button class="action" id="continueButton">
+            ▶️ متابعة
+        </button>
+
+    `;
+
+
+    document.getElementById("continueButton")
+        .onclick = function() {
+
+            groupCorrect = 0;
+
+            groupTimes = [];
+
+            pauseScreen.classList.add("hidden");
+
+            game.classList.remove("hidden");
+
+            loadQuestion();
+
+        };
+
+}
+
+
+/* =========================================================
+   النتيجة النهائية
+   ========================================================= */
+
+function finishQuiz() {
+
+    clearInterval(timerInterval);
+
+    game.classList.add("hidden");
+
+    pauseScreen.classList.add("hidden");
+
+    resultScreen.classList.remove("hidden");
+
+    let percentage =
+        Math.round(
+            (score / questionBank.length) * 100
+        );
+
+
+    resultScreen.innerHTML = `
+
+        <h2>🎉 انتهت المسابقة!</h2>
+
+        <p class="big-score">
+            ${score} / ${questionBank.length}
+        </p>
+
+        <p>
+            النسبة:
+            <strong>${percentage}%</strong>
+        </p>
+
+
+        <h3>⚡ إحصائية سرعة الإجابات</h3>
+
+        <table>
+
+            <tr>
+                <th>زمن الإجابة</th>
+                <th>عدد الأسئلة</th>
+            </tr>
+
+            <tr>
+                <td>أقل من 3 ثوانٍ</td>
+                <td>${speedStats.under3}</td>
+            </tr>
+
+            <tr>
+                <td>من 3 إلى أقل من 5 ثوانٍ</td>
+                <td>${speedStats.under5}</td>
+            </tr>
+
+            <tr>
+                <td>من 5 إلى أقل من 7 ثوانٍ</td>
+                <td>${speedStats.under7}</td>
+            </tr>
+
+            <tr>
+                <td>من 7 إلى أقل من 10 ثوانٍ</td>
+                <td>${speedStats.under10}</td>
+            </tr>
+
+            <tr>
+                <td>من 10 إلى أقل من 15 ثانية</td>
+                <td>${speedStats.under15}</td>
+            </tr>
+
+            <tr>
+                <td>من 15 إلى 25 ثانية</td>
+                <td>${speedStats.under25}</td>
+            </tr>
+
+            <tr>
+                <td>انتهى الوقت</td>
+                <td>${speedStats.timeout}</td>
+            </tr>
+
+        </table>
+
+        <br>
+
+        <p>
+            🛡️ إنتاج: عبدالكريم الهياف
+        </p>
+
+        <p>
+            Produced by: Abdulkarim Alhayaf
+        </p>
+
+    `;
+
+
+    restartButton.classList.remove("hidden");
+
+}
+
+
+/* =========================================================
+   إعادة المحاولة
+   ========================================================= */
+
+restartButton.onclick = function() {
+
+    location.reload();
+
+};
+
+
+/* =========================================================
+   بدء المسابقة
+   ========================================================= */
+
+loadQuestion();
+
+</script>
+
+</body>
+</html>
